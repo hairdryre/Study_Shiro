@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans-4.0.xsd">
+
+    <!-- 自定义Realm -->
+    <bean id="userRealm" class="com.jay.shiro.UserRealm"/>
+
+    <!-- securityManager 对象-->
+    <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <!-- 引入UserRealm -->
+        <property name="realm" ref="userRealm"/>
+    </bean>
+
+    <!-- 这个bean的id与web.xml中shiro相关配置保持一致 -->
+    <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+        <property name="securityManager" ref="securityManager"/>
+        <!-- 没认证后重定向的位置 -->
+        <property name="loginUrl" value="/login.jsp"/>
+        <!-- 登录成功跳转的位置 -->
+        <property name="successUrl" value="/home.jsp"/>
+        <!-- 没有权限跳转的位置 -->
+        <property name="unauthorizedUrl" value="/unauthorized.jsp"/>
+        <!-- 拦截请求-->
+        <property name="filterChainDefinitions">
+            <value>
+                <!-- 登录请求不拦截 -->
+                /actions/security/login = anon
+                <!-- 访问admin相关的请求，需要认证，
+                     且经过自定义拦截器permissionFilter，最后还需要coder权限-->
+                /actions/admin/** = authc,permissionFilter,roles[coder]
+                /actions/logout = logout
+                /actions/** = authc
+            </value>
+        </property>
+        <!-- 用户自定义的过滤器 -->
+        <property name="filters">
+            <map>
+                <entry key="permissionFilter" value-ref="userAccessControlFilter"/>
+            </map>
+        </property>
+    </bean>
+
+    <!-- Shiro 生命周期处理器-->
+    <bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor"/>
+
+</beans>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jay.dao.UserDao">
+
+    <!--基础映射-->
+    <resultMap id="UserResultMap" type="com.jay.domain.UserEntity">
+        <result column="ID" property="id"/>
+        <result column="USERNAME" property="username"/>
+        <result column="PASSWORD" property="password"/>
+    </resultMap>
+
+    <select id="findAllUser" resultMap="UserResultMap">
+         SELECT * FROM t_user
+    </select>
+
+    <select id="findPasswordByName" resultType="java.lang.String">
+        SELECT password FROM t_user WHERE username = #{username} LIMIT 1
+    </select>
+
+</mapper>

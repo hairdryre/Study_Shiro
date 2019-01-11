@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans-4.0.xsd">
+
+    <!-- 自定义Realm -->
+    <bean id="userRealm" class="com.jay.shiro.UserRealm"/>
+
+    <!-- securityManager 对象-->
+    <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <!-- 引入UserRealm -->
+        <property name="realm" ref="userRealm"/>
+        <property name="rememberMeManager" ref="rememberMeManager"/>
+    </bean>
+
+    <!-- 这个bean的id与web.xml中shiro相关配置保持一致 -->
+    <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+        <property name="securityManager" ref="securityManager"/>
+        <!-- 没认证后重定向的位置 -->
+        <property name="loginUrl" value="/actions/login"/>
+        <!-- 登录成功跳转的位置 -->
+        <property name="successUrl" value="/home.jsp"/>
+        <!-- 没有权限跳转的位置 -->
+        <property name="unauthorizedUrl" value="/unauthorized.jsp"/>
+        <!-- 拦截请求-->
+        <property name="filterChainDefinitions">
+            <value>
+                <!-- 登录请求不拦截 -->
+                /actions/security/login = anon
+                <!-- 访问admin相关的请求，需要认证，
+                     且经过自定义拦截器permissionFilter，最后还需要coder权限-->
+                /actions/admin/** = authc,permissionFilter,roles[coder]
+                /actions/obtainAllUsers = user
+                /actions/logout = logout
+                /actions/** = authc
+            </value>
+        </property>
+        <!-- 用户自定义的过滤器 -->
+        <property name="filters">
+            <map>
+                <entry key="permissionFilter" value-ref="userAccessControlFilter"/>
+            </map>
+        </property>
+    </bean>
+
+    <!-- Shiro 生命周期处理器-->
+    <bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor"/>
+
+    <!-- 会话Cookie模板 -->
+    <bean id="sessionIdCookie" class="org.apache.shiro.web.servlet.SimpleCookie">
+        <constructor-arg value="sid"/>
+        <property name="httpOnly" value="true"/>
+        <!--maxAge=-1表示浏览器关闭时失效此Cookie -->
+        <property name="maxAge" value="-1"/>
+    </bean>
+    <!-- rememberMeCookie：即记住我的Cookie，保存时长30天 -->
+    <bean id="rememberMeCookie" class="org.apache.shiro.web.servlet.SimpleCookie">
+        <constructor-arg value="rememberMe"/>
+        <property name="httpOnly" value="true"/>
+        <property name="maxAge" value="2592000"/><!-- 30天 -->
+    </bean>
+
+    <!-- rememberMe管理器 -->
+    <bean id="rememberMeManager"
+          class="org.apache.shiro.web.mgt.CookieRememberMeManager">
+        <property name="cipherKey" value="#{T(org.apache.shiro.codec.Base64).decode('4AvVhmFLUs0KTA3Kprsdag==')}"/>
+        <property name="cookie" ref="rememberMeCookie"/>
+    </bean>
+
+</beans>
