@@ -41,7 +41,7 @@ public class UserController {
     }
 
     @RequestMapping(value = "security/login", method = {RequestMethod.POST})
-    public ModelAndView login(@RequestParam("username") String userName, @RequestParam("password") String password,
+    public ModelAndView authentication(@RequestParam("username") String userName, @RequestParam("password") String password,
                               @RequestParam(value = "isRememberMe", required = false) Boolean isRememberMe,
                               HttpServletRequest request, HttpServletResponse response) {
         if (isRememberMe == null) {
