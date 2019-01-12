@@ -1,5 +1,6 @@
 package com.jay.dao;
 
+import com.jay.domain.UserEntity;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
@@ -14,7 +15,7 @@ import java.util.List;
 @Repository
 public interface UserDao {
 
-    List<User> findAllUser();
+    List<UserEntity> findAllUser();
 
     String findPasswordByName(@Param("username")String username);
 }

@@ -1,5 +1,6 @@
 package com.jay.controller;
 
+import com.jay.domain.UserEntity;
 import com.jay.service.UserService;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.UsernamePasswordToken;
@@ -16,7 +17,6 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.registry.infomodel.User;
 import java.util.List;
 
 import static java.lang.Boolean.TRUE;
@@ -36,7 +36,7 @@ public class UserController {
 
     @RequestMapping("/obtainAllUsers")
     @ResponseBody
-    public List<User> getAllUser() {
+    public List<UserEntity> getAllUser() {
         return userService.findAllUser();
     }
 

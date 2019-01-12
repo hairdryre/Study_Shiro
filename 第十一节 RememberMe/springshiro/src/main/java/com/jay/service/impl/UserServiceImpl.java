@@ -1,11 +1,11 @@
 package com.jay.service.impl;
 
 import com.jay.dao.UserDao;
+import com.jay.domain.UserEntity;
 import com.jay.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.xml.registry.infomodel.User;
 import java.util.List;
 
 /**
@@ -19,7 +19,7 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserDao userDao;
 
-    public List<User> findAllUser() {
+    public List<UserEntity> findAllUser() {
         return userDao.findAllUser();
     }
 

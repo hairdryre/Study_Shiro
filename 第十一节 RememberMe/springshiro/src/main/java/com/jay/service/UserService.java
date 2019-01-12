@@ -1,6 +1,7 @@
 package com.jay.service;
 
-import javax.xml.registry.infomodel.User;
+import com.jay.domain.UserEntity;
+
 import java.util.List;
 
 /**
@@ -10,7 +11,7 @@ import java.util.List;
  */
 public interface UserService {
 
-    List<User> findAllUser();
+    List<UserEntity> findAllUser();
 
     String findPasswordByName(String username);
 
