@@ -38,9 +38,15 @@ http://www.springframework.org/schema/beans/spring-beans-4.0.xsd">
         <property name="filters">
             <map>
                 <entry key="permissionFilter" value-ref="userAccessControlFilter"/>
+                <!--<entry key="logout" value-ref="logoutFilter"/>-->
             </map>
         </property>
     </bean>
+
+    <!-- 自定义退出后跳转哪个页面 -->
+    <!--<bean id="logoutFilter" class="org.apache.shiro.web.filter.authc.LogoutFilter">-->
+        <!--<property name="redirectUrl" value="/index.jsp"/>-->
+    <!--</bean>-->
 
     <!-- Shiro 生命周期处理器-->
     <bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor"/>
