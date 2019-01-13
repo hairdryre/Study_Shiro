@@ -94,7 +94,6 @@ public class UserController {
         rememberCookie.setPath("/");
         //从请求中获取加密cookie数据
         final String usernameFromCookie = rememberCookie.readValue(request, null);
-        //使用shiro提供的Base64加密方法解密
         request.getSession().setAttribute("username", usernameFromCookie);
         return "login";
     }
