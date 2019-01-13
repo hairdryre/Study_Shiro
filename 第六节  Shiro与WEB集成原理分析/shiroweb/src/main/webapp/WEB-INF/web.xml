@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://java.sun.com/xml/ns/javaee"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+		  http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" version="3.0">
+    <display-name>Archetype Created Web Application</display-name>
+    <!-- 初始化SecurityManager对象所需要的环境-->
+    <context-param>
+        <param-name>shiroEnvironmentClass</param-name>
+        <param-value>org.apache.shiro.web.env.IniWebEnvironment</param-value>
+    </context-param>
+    <!-- 指定Shiro的配置文件的位置 -->
+    <context-param>
+        <param-name>shiroConfigLocations</param-name>
+        <param-value>classpath:shiro.ini</param-value>
+    </context-param>
+
+    <!-- 监听服务器启动时，创建shiro的web环境。
+                  即加载shiroEnvironmentClass变量指定的IniWebEnvironment类-->
+    <listener>
+        <listener-class>org.apache.shiro.web.env.EnvironmentLoaderListener</listener-class>
+    </listener>
+
+    <!-- shiro的l拦截入口，拦截一切请求 -->
+    <filter>
+        <filter-name>shiroFilter</filter-name>
+        <filter-class>org.apache.shiro.web.servlet.ShiroFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>shiroFilter</filter-name>
+        <!-- 拦截所有请求 -->
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+
+</web-app>
