@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans-4.0.xsd">
+
+    <!-- 这个bean的id与web.xml中shiro相关配置保持一致 -->
+    <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+        <property name="securityManager" ref="securityManager"/>
+        <!-- 没认证后重定向的位置 -->
+        <property name="loginUrl" value="/actions/login"/>
+        <!-- 登录成功跳转的位置 -->
+        <property name="successUrl" value="/home.jsp"/>
+        <!-- 没有权限跳转的位置 -->
+        <property name="unauthorizedUrl" value="/unauthorized.jsp"/>
+        <!-- 拦截请求-->
+        <property name="filterChainDefinitions">
+            <value>
+                <!-- 登录请求不拦截 -->
+                /actions/security/login = anon
+                <!-- 访问admin相关的请求，需要认证，
+                     且经过自定义拦截器permissionFilter，最后还需要coder权限-->
+                /actions/admin/** = authc,permissionFilter,roles[coder]
+                /actions/obtainAllUsers = user
+                /actions/logout = logout
+                /actions/** = authc
+            </value>
+        </property>
+        <!-- 用户自定义的过滤器 -->
+        <property name="filters">
+            <map>
+                <entry key="permissionFilter" value-ref="userAccessControlFilter"/>
+            </map>
+        </property>
+    </bean>
+
+    <!-- 自定义Realm -->
+    <bean id="userRealm" class="com.jay.shiro.UserRealm"/>
+
+    <!-- securityManager 对象-->
+    <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <!-- 引入UserRealm -->
+        <property name="realm" ref="userRealm"/>
+        <!-- 引入记住我管理器-->
+        <property name="rememberMeManager" ref="rememberMeManager"/>
+        <!-- 引入sessionManager-->
+        <property name="sessionManager" ref="sessionManager"/>
+    </bean>
+
+    <!-- 会话管理器 ,时间单位是毫秒-->
+    <bean id="sessionManager" class="org.apache.shiro.web.session.mgt.DefaultWebSessionManager">
+        <!--去掉URL中的JSESSIONID-->
+        <property name="sessionIdUrlRewritingEnabled" value="false"/>
+        <!-- 会话存活时间(毫秒)，最好与Redis中缓存时间一致 -->
+        <property name="globalSessionTimeout" value="600000"/><!-- 10分钟 -->
+        <!-- 是否删除无效的session-->
+        <property name="deleteInvalidSessions" value="true"/>
+        <!-- 扫描session线程,负责清理超时会话 -->
+        <property name="sessionValidationSchedulerEnabled" value="true"/>
+        <!-- 使用的是QuartZ组件来定时清理-->
+        <property name="sessionValidationScheduler" ref="sessionValidationScheduler"/>
+        <!-- session需要使用会话cookie模版-->
+        <property name="sessionIdCookieEnabled" value="true"/>
+        <property name="sessionIdCookie" ref="sessionIdCookie"/>
+        <!-- 对session进行增删错改查的实现类
+             ，如果不自己注入sessionDAO，defaultWebSessionManager会使用MemorySessionDAO用内存做为默认实现类-->
+        <!-- https://blog.csdn.net/lishehe/article/details/45223823 -->
+        <property name="sessionDAO" ref="sessionDAO"/>
+    </bean>
+
+    <!-- 会话验证调度器 ,时间单位是毫秒-->
+    <bean id="sessionValidationScheduler" class="org.apache.shiro.session.mgt.quartz.QuartzSessionValidationScheduler">
+        <property name="sessionValidationInterval" value="30000"/>
+        <property name="sessionManager" ref="sessionManager"/>
+    </bean>
+
+    <!-- 会话 ID 生成器 -->
+    <bean id="sessionIdGenerator" class="org.apache.shiro.session.mgt.eis.JavaUuidSessionIdGenerator"/>
+
+    <!-- 自定义session会话存储的实现类 ，使用Redis来存储共享session，达到分布式部署目的-->
+    <bean id="sessionDAO" class="com.jay.shiro.RedisSessionDao">
+        <property name="redisService" ref="redisService"/>
+        <!-- Session的过期时间，单位秒。session将存储在Redis集群中实现共享-->
+        <!-- Redis设置半小时的缓存失效时间 -->
+        <property name="expireSeconds" value="600000"/>
+    </bean>
+
+    <!-- 会话Cookie模板 -->
+    <bean id="sessionIdCookie" class="org.apache.shiro.web.servlet.SimpleCookie">
+        <constructor-arg value="Shared_Session"/>
+        <property name="httpOnly" value="true"/>
+        <!--maxAge=-1表示浏览器关闭时失效此Cookie -->
+        <property name="maxAge" value="-1"/>
+    </bean>
+    <!-- rememberMeCookie：即记住我的Cookie，保存时长30天 -->
+    <bean id="rememberMeCookie" class="org.apache.shiro.web.servlet.SimpleCookie">
+        <constructor-arg value="rememberMe"/>
+        <property name="httpOnly" value="true"/>
+        <property name="maxAge" value="2592000"/><!-- 30天 -->
+    </bean>
+
+    <!-- rememberMe管理器 -->
+    <bean id="rememberMeManager"
+          class="org.apache.shiro.web.mgt.CookieRememberMeManager">
+        <property name="cipherKey" value="#{T(org.apache.shiro.codec.Base64).decode('4AvVhmFLUs0KTA3Kprsdag==')}"/>
+        <property name="cookie" ref="rememberMeCookie"/>
+    </bean>
+
+    <!-- Shiro 生命周期处理器,，保证实现shiro内部的生命周期函数bean的执行 -->
+    <bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor"/>
+
+</beans>
