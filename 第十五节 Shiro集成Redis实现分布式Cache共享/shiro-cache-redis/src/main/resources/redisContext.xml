@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:property-placeholder location="classpath*:jdbc.properties"/>
+
+    <!-- redis pool 连接池配置 -->
+    <bean id="poolConfig" class="redis.clients.jedis.JedisPoolConfig">
+        <!-- 连接耗尽时是否阻塞, false报异常,ture阻塞直到超时, 默认true -->
+        <property name="blockWhenExhausted" value="true"/>
+        <!-- 最大空闲连接数 -->
+        <property name="maxIdle" value="${spring.redis.maxIdle}"/>
+        <!-- 最小空闲连接数 -->
+        <property name="minIdle" value="${spring.redis.minIdle}"/>
+        <!-- 最大连接数 -->
+        <property name="maxTotal" value="${spring.redis.maxTotal}"/>
+        <!-- 获取连接时的最大等待毫秒数 -->
+        <property name="maxWaitMillis" value="${spring.redis.maxWaitMillis}"/><!-- 0.5分钟 -->
+        <!-- 在获取连接的时候检查有效性, 默认false , 如果为true，则得到的jedis实例均是可用的-->
+        <property name="testOnBorrow" value="false"/>
+        <!-- 在空闲时检查有效性, 默认false -->
+        <property name="testWhileIdle" value="false"/>
+        <!-- 在归还给pool时，是否提前检查有效性  -->
+        <property name="testOnReturn" value="false"/>
+    </bean>
+
+    <!-- Spring-redis连接池管理工厂 -->
+    <bean id="jedisConnectionFactory" class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
+        <!-- IP地址 -->
+        <property name="hostName" value="${spring.redis.host}"/>
+        <!-- 端口号 -->
+        <property name="port" value="${spring.redis.port}"/>
+        <!-- 密码-->
+        <property name="password" value="${spring.redis.password}"/>
+        <!-- 超时时间-->
+        <property name="timeout" value="${spring.redis.timeout}"/>
+        <!-- usePool：是否使用连接池 -->
+        <property name="usePool" value="true"/>
+        <!-- 连接池配置引用 -->
+        <property name="poolConfig" ref="poolConfig"/>
+    </bean>
+
+    <!-- redisTemplate 与 序列化策略，Java中注入此模版类即可使用Redis-->
+    <bean id="redisTemplate" class="org.springframework.data.redis.core.RedisTemplate"
+          p:connectionFactory-ref="jedisConnectionFactory">
+        <property name="enableTransactionSupport" value="true"/>
+        <property name="keySerializer">
+            <bean class="org.springframework.data.redis.serializer.StringRedisSerializer"/>
+        </property>
+        <property name="hashKeySerializer">
+            <bean class="org.springframework.data.redis.serializer.StringRedisSerializer"/>
+        </property>
+        <property name="valueSerializer">
+            <bean class="org.springframework.data.redis.serializer.JdkSerializationRedisSerializer"/>
+        </property>
+        <property name="hashValueSerializer">
+            <bean class="org.springframework.data.redis.serializer.JdkSerializationRedisSerializer"/>
+        </property>
+    </bean>
+
+</beans>
