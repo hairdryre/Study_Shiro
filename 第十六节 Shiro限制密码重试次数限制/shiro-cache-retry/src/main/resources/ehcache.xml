@@ -1,0 +1,36 @@
+<ehcache name="shiroCache">
+    <!-- 磁盘上缓存的位置 -->
+    <diskStore path="java.io.tmpdir"/>
+
+    <!--
+    更多详细配置可参考:https://www.cnblogs.com/huangzijian/p/6723630.html
+    name:缓存名称
+    maxElementsInMemory 缓存最大数
+    eternal 缓存中对象是否为永久
+    overflowToDisk 内存不足时，是否启用磁盘缓存
+    timeToLiveSeconds 缓存数据的生存时间（单位秒）
+    timeToIdleSeconds 缓存对象空闲多久后删除（单位秒）
+    diskPersistent 是否在VM重启时存储硬盘的缓存数据
+    diskExpiryThreadIntervalSeconds 磁盘失效线程运行时间间隔
+    -->
+    <defaultCache
+            maxElementsInMemory="10000"
+            eternal="false"
+            overflowToDisk="false"
+            timeToIdleSeconds="300"
+            timeToLiveSeconds="300"
+            diskPersistent="false"
+            diskExpiryThreadIntervalSeconds="120"
+    />
+
+    <!-- 登录验证缓存，缓存1分钟 -->
+    <cache name="passwordRetryCache"
+           maxElementsInMemory="10000"
+           eternal="false"
+           overflowToDisk="false"
+           timeToIdleSeconds="60"
+           timeToLiveSeconds="60"
+           diskPersistent="false"
+           diskExpiryThreadIntervalSeconds="120"
+    />
+</ehcache>
